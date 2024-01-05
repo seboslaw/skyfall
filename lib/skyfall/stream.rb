@@ -18,8 +18,8 @@ module Skyfall
 
     def initialize(server, endpoint, cursor = nil)
       @endpoint = check_endpoint(endpoint)
-      @server = check_hostname(server)
-      @cursor = cursor
+      @root_url = build_root_url(server)
+      @cursor = check_cursor(cursor)
       @handlers = {}
       @auto_reconnect = true
       @connection_attempts = 0
@@ -45,6 +45,7 @@ module Skyfall
         end
 
         @ws.on(:message) do |msg|
+          @reconnecting = false
           @connection_attempts = 0
 
           data = msg.data.pack('C*')
@@ -66,7 +67,7 @@ module Skyfall
         @ws.on(:close) do |e|
           @ws = nil
 
-          if @auto_reconnect && @engines_on
+          if @reconnecting || @auto_reconnect && @engines_on
             EM.add_timer(reconnect_delay) do
               @connection_attempts += 1
               @handlers[:reconnect]&.call
@@ -81,11 +82,17 @@ module Skyfall
       end
     end
 
+    def reconnect
+      @reconnecting = true
+      @ws.close
+    end
+
     def disconnect
       return unless EM.reactor_running?
 
+      @reconnecting = false
       @engines_on = false
-      EM.stop_event_loop
+      @ws.close
     end
 
     alias close disconnect
@@ -130,9 +137,17 @@ module Skyfall
     end
 
     def build_websocket_url
-      url = "wss://#{@server}/xrpc/#{@endpoint}"
-      url += "?cursor=#{@cursor}" if @cursor
-      url
+      @root_url + "/xrpc/" + @endpoint + (@cursor ? "?cursor=#{@cursor}" : "")
+    end
+
+    def check_cursor(cursor)
+      if cursor.nil?
+        nil
+      elsif cursor.is_a?(Integer) || cursor.is_a?(String) && cursor =~ /^[0-9]+$/
+        cursor.to_i
+      else
+        raise ArgumentError, "Invalid cursor: #{cursor.inspect} - cursor must be an integer number"
+      end
     end
 
     def check_endpoint(endpoint)
@@ -148,14 +163,18 @@ module Skyfall
       endpoint
     end
 
-    def check_hostname(server)
+    def build_root_url(server)
       if server.is_a?(String)
-        raise ArgumentError("Invalid server name: #{server}") if server.strip.empty? || server.include?('/')
+        if server.start_with?('ws://') || server.start_with?('wss://')
+          server
+        elsif server.strip.empty? || server.include?('/')
+          raise ArgumentError("Server parameter should be a hostname or a ws:// or wss:// URL")
+        else
+          "wss://#{server}"
+        end
       else
-        raise ArgumentError("Server name should be a string")
+        raise ArgumentError("Server parameter should be a string")
       end
-
-      server
     end
   end
 end
