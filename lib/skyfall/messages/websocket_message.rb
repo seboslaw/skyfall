@@ -8,9 +8,12 @@ module Skyfall
   class WebsocketMessage
     using Skyfall::Extensions
 
+    require_relative 'account_message'
     require_relative 'commit_message'
     require_relative 'handle_message'
+    require_relative 'identity_message'
     require_relative 'info_message'
+    require_relative 'labels_message'
     require_relative 'tombstone_message'
     require_relative 'unknown_message'
 
@@ -23,9 +26,12 @@ module Skyfall
       type_object, data_object = decode_cbor_objects(data)
 
       message_class = case type_object['t']
+        when '#account' then AccountMessage
         when '#commit' then CommitMessage
         when '#handle' then HandleMessage
+        when '#identity' then IdentityMessage
         when '#info' then InfoMessage
+        when '#labels' then LabelsMessage
         when '#tombstone' then TombstoneMessage
         else UnknownMessage
       end

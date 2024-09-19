@@ -1,3 +1,36 @@
+## [Unreleased]
+
+- added heartbeat timer
+
+## [0.3.1] - 2024-06-28
+
+- added `app.bsky.graph.starterpack` and `chat.bsky.actor.declaration` record types
+- added `#account` event type (`AccountMessage`)
+- added `handle` field to `IdentityMessage`
+- fixed param validation on `Stream` initialization
+- reverted the change that added Ruby stdlib dependencies explicitly to the gemspec, since this causes more problems than it's worth - only `base64` is left there, since it's the one now required to be listed
+
+## [0.3.0] - 2024-03-21
+
+- added support for labeller firehose, served by labeller services at the `com.atproto.label.subscribeLabels` endpoint (aliased as `:subscribe_labels`)
+- the `#labels` messages from the labeller firehose are parsed into a `LabelsMessage`, which includes a `labels` array of `Label` objects
+- `Stream` callbacks can now also be assigned via setters, e.g. `stream.on_message = proc { ... }`
+- added default error handler to `Stream` which logs the error to `$stdout` - set `stream.on_error = nil` to disable
+- added Ruby stdlib dependencies explicitly to the gemspec - fixes a warning in Ruby 3.3 when requiring `base64`, which will be extracted as an optional gem in 3.4
+
+## [0.2.5] - 2024-03-14
+
+- added `:bsky_labeler` record type symbol & collection constant
+
+## [0.2.4] - 2024-02-27
+
+- added support for `#identity` message type
+- added `Operation#did` as an alias of `#repo`
+- added `Stream#reconnect` method which forces the websocket to reconnect
+- added some validation for the `cursor` parameter in `Stream` initializer
+- the `server` parameter in `Stream` initializer can be a full URL with scheme, which lets you connect to e.g. `ws://localhost` (since by default, `wss://` is used)
+- tweaked `#inspect` output of `Stream` and `Operation`
+
 ## [0.2.3] - 2023-09-28
 
 - fixed encoding of image CIDs again (they should be wrapped in a `$link` object)
