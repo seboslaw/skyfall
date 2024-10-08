@@ -1,6 +1,12 @@
-## [Unreleased]
+## [0.4.1] - 2024-10-04
 
-- added heartbeat timer
+- performance fix - don't decode CAR sections which aren't needed, which is most of them; this cuts the amount of memory that GC has to free up by about one third, and should speed up processing by around ~10%
+
+## [0.4.0] - 2024-09-23
+
+- (re)added a "hearbeat" feature (removed earlier in 0.2.0) to fix the occasional issue when the websocket stops receiving data, but doesn't disconnect (not enabled by default, turn it on by setting `check_heartbeat` to true)
+- added a way to set the user agent sent when connecting using the `user_agent` field (default is `"Skyfall/#{version}"`)
+- added `app.bsky.feed.postgate` record type
 
 ## [0.3.1] - 2024-06-28
 
