@@ -1,11 +1,12 @@
 require_relative '../errors'
 require_relative '../extensions'
+require_relative '../firehose'
 
 require 'cbor'
 require 'time'
 
 module Skyfall
-  class WebsocketMessage
+  class Firehose::Message
     using Skyfall::Extensions
 
     require_relative 'account_message'
@@ -14,26 +15,29 @@ module Skyfall
     require_relative 'identity_message'
     require_relative 'info_message'
     require_relative 'labels_message'
+    require_relative 'sync_message'
     require_relative 'tombstone_message'
     require_relative 'unknown_message'
 
-    attr_reader :type_object, :data_object
     attr_reader :type, :did, :seq
-
     alias repo did
+
+    # :nodoc: - consider this as semi-private API
+    attr_reader :type_object, :data_object
 
     def self.new(data)
       type_object, data_object = decode_cbor_objects(data)
 
       message_class = case type_object['t']
-        when '#account' then AccountMessage
-        when '#commit' then CommitMessage
-        when '#handle' then HandleMessage
-        when '#identity' then IdentityMessage
-        when '#info' then InfoMessage
-        when '#labels' then LabelsMessage
-        when '#tombstone' then TombstoneMessage
-        else UnknownMessage
+        when '#account'   then Firehose::AccountMessage
+        when '#commit'    then Firehose::CommitMessage
+        when '#handle'    then Firehose::HandleMessage
+        when '#identity'  then Firehose::IdentityMessage
+        when '#info'      then Firehose::InfoMessage
+        when '#labels'    then Firehose::LabelsMessage
+        when '#sync'      then Firehose::SyncMessage
+        when '#tombstone' then Firehose::TombstoneMessage
+        else Firehose::UnknownMessage
       end
 
       message = message_class.allocate
@@ -52,6 +56,10 @@ module Skyfall
 
     def operations
       []
+    end
+
+    def unknown?
+      self.is_a?(Firehose::UnknownMessage)
     end
 
     def time
