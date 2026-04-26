@@ -1,7 +1,11 @@
+# frozen_string_literal: true
+
 require 'cbor'
 require 'stringio'
 
 module Skyfall
+
+  # @private
   module Extensions
 
     refine StringIO do

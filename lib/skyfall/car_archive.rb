@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'cid'
 require_relative 'errors'
 require_relative 'extensions'
@@ -30,15 +32,34 @@ module Skyfall
 
     def initialize(data)
       @sections = []
+      @buffer = StringIO.new(data)
 
-      buffer = StringIO.new(data)
-      read_header(buffer)
-      read_section(buffer) until buffer.eof?
+      read_header(@buffer)
     end
 
     def section_with_cid(cid)
-      section = @sections.detect { |s| s.cid == cid }
-      section && section.body
+      if section = @sections.detect { |s| s.cid == cid }
+        return section.body
+      end
+
+      if @buffer
+        while !@buffer.eof?
+          section = read_section(@buffer)
+          return section.body if section.cid == cid
+        end
+      end
+
+      @buffer = nil
+      nil
+    end
+
+    def sections
+      if @buffer
+        read_section(@buffer) while !@buffer.eof?
+        @buffer = nil
+      end
+
+      @sections
     end
 
     def self.convert_data(object)
@@ -73,6 +94,18 @@ module Skyfall
 
     def self.make_bytes(data)
       { '$bytes' => Base64.encode64(data).chomp.gsub(/=+$/, '') }
+    end
+
+    def inspect
+      vars = instance_variables.map { |v|
+        if v == :@sections && @buffer
+          "#{v}=[...]"
+        else
+          "#{v}=#{instance_variable_get(v).inspect}"
+        end
+      }
+
+      "#<#{self.class}:0x#{object_id} #{vars.join(", ")}>"
     end
 
     private
@@ -116,7 +149,10 @@ module Skyfall
       cid = CID.new(prefix + cid_data)
 
       body_data = sbuffer.read
-      @sections << CarSection.new(cid, body_data)
+      new_section = CarSection.new(cid, body_data)
+
+      @sections << new_section
+      new_section
     end
   end
 end

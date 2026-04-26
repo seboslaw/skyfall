@@ -1,4 +1,13 @@
+# frozen_string_literal: true
+
 module Skyfall
+
+  #
+  # This module defines constants for known Bluesky record collection types, and a mapping of those
+  # names to symbol short codes which can be used as shorthand when processing events or in
+  # Jetstream filters.
+  #
+
   module Collection
     BSKY_PROFILE      = "app.bsky.actor.profile"
     BSKY_ACTOR_STATUS = "app.bsky.actor.status"
@@ -17,7 +26,10 @@ module Skyfall
     BSKY_VERIFICATION = "app.bsky.graph.verification"
     BSKY_LABELER      = "app.bsky.labeler.service"
 
-    BSKY_CHAT_DECLARATION = "chat.bsky.actor.declaration"
+    BSKY_NOTIF_DECLARATION = "app.bsky.notification.declaration"
+    BSKY_CHAT_DECLARATION  = "chat.bsky.actor.declaration"
+
+    # Mapping of NSID collection names to symbol short codes
 
     SHORT_CODES = {
       BSKY_ACTOR_STATUS => :bsky_actor_status,
@@ -37,11 +49,21 @@ module Skyfall
       BSKY_THREADGATE   => :bsky_threadgate,
       BSKY_VERIFICATION => :bsky_verification,
       BSKY_CHAT_DECLARATION => :bsky_chat_declaration,
+      BSKY_NOTIF_DECLARATION => :bsky_notif_declaration
     }
+
+    # Returns a symbol short code for a given collection NSID, or `:unknown`
+    # if NSID is not on the list.
+    # @param collection [String] collection NSID
+    # @return [Symbol] short code or :unknown
 
     def self.short_code(collection)
       SHORT_CODES[collection] || :unknown
     end
+
+    # Returns a collection NSID assigned to a given short code symbol, if one is defined.
+    # @param code [Symbol] one of the symbols listed in {SHORT_CODES}
+    # @return [String, nil] assigned NSID string, or nil when code is not known
 
     def self.from_short_code(code)
       SHORT_CODES.detect { |k, v| v == code }&.first

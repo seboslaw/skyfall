@@ -3,7 +3,7 @@
 A Ruby gem for streaming data from the Bluesky/ATProto firehose 🦋
 
 > [!NOTE]
-> ATProto Ruby gems collection: [skyfall](https://github.com/mackuba/skyfall) | [blue_factory](https://github.com/mackuba/blue_factory) | [minisky](https://github.com/mackuba/minisky) | [didkit](https://github.com/mackuba/didkit)
+> Part of ATProto Ruby SDK: [ruby.sdk.blue](https://ruby.sdk.blue)
 
 
 ## What does it do
@@ -15,13 +15,15 @@ Since version 0.5, Skyfall also supports connecting to [Jetstream](https://githu
 
 ## Installation
 
-From the command line:
+To use Skyfall, you need a reasonably new version of Ruby – it should run on Ruby 2.6 and above, although it's recommended to use a version that's still getting maintainance updates, i.e. currently 3.2+. A compatible version should be preinstalled on macOS Big Sur and above and on many Linux systems. Otherwise, you can install one using tools such as [RVM](https://rvm.io), [asdf](https://asdf-vm.com), [ruby-install](https://github.com/postmodern/ruby-install) or [ruby-build](https://github.com/rbenv/ruby-build), or `rpm` or `apt-get` on Linux (see more installation options on [ruby-lang.org](https://www.ruby-lang.org/en/downloads/)).
 
-    gem install skyfall
+To install the gem, run the command:
 
-Or, add this to your `Gemfile`:
+    [sudo] gem install skyfall
 
-    gem 'skyfall', '~> 0.5'
+Or add this to your app's `Gemfile`:
+
+    gem 'skyfall', '~> 0.6'
 
 
 ## Usage
@@ -128,13 +130,10 @@ Each message passed to `on_message` is an instance of a subclass of either `Skyf
 - `CommitMessage` (`#commit`) - represents a change in a user's repo; most messages are of this type
 - `IdentityMessage` (`#identity`) - notifies about a change in user's DID document, e.g. a handle change or a migration to a new PDS
 - `AccountMessage` (`#account`) - notifies about a change of an account's status (de/activation, suspension, deletion)
-- `HandleMessage` (`#handle` - deprecated) - when a different handle is assigned to a user's DID
-- `TombstoneMessage` (`#tombstone` - deprecated) - when an account is deleted
+- `SyncMessage` (`#sync`) - updates repository state, can be used to trigger account resynchronization
 - `LabelsMessage` (`#labels`) - only used in `subscribe_labels` endpoint
 - `InfoMessage` (`#info`) - a protocol error message, e.g. about an invalid cursor parameter
 - `UnknownMessage` is used for other unrecognized message types
-
-`#handle` and `#tombstone` events are considered deprecated, replaced by `#identity` and `#account` respectively. They are still being emitted at the moment (in parallel with the newer event types), but they might stop being sent at any moment, so it's recommended that you don't rely on those.
 
 `Skyfall::Firehose::Message` and `Skyfall::Jetstream::Message` variants of message classes should have more or less the same interface, except when a given field is not included in one of the formats.
 
@@ -198,7 +197,7 @@ sky.on_message do |m|
 end
 ```
 
-For more examples, see the [example](https://github.com/mackuba/skyfall/blob/master/example) folder or the [bluesky-feeds-rb](https://github.com/mackuba/bluesky-feeds-rb/blob/master/app/firehose_stream.rb) project, which implements a feed generator service.
+For more examples, see the [examples page](https://ruby.sdk.blue/examples/) on [ruby.sdk.blue](https://ruby.sdk.blue), or the [bluesky-feeds-rb](https://tangled.org/mackuba.eu/bluesky-feeds-rb/blob/master/app/firehose_stream.rb) project, which implements a feed generator service.
 
 
 ### Note on custom lexicons
@@ -305,7 +304,7 @@ See [Jetstream docs](https://github.com/bluesky-social/jetstream?tab=readme-ov-f
 
 ## Credits
 
-Copyright © 2024 Kuba Suder ([@mackuba.eu](https://bsky.app/profile/mackuba.eu)).
+Copyright © 2026 Kuba Suder ([@mackuba.eu](https://bsky.app/profile/did:plc:oio4hkxaop4ao4wz2pp3f4cr)).
 
 The code is available under the terms of the [zlib license](https://choosealicense.com/licenses/zlib/) (permissive, similar to MIT).
 
